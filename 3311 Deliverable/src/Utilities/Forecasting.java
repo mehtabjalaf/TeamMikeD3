@@ -54,7 +54,7 @@ public class Forecasting extends JFrame implements Window {
 		ArrayList<DataBaseResults> result2;
 		try {
 			dao.connectToDataBase(); // just so it connects
-			result2 = dao.sendQuery("SELECT \"REF_DATE\", GEO, 23 as value\r\n" + "FROM nhip\r\n" + "GROUP BY GEO;");
+			result2 = dao.sendQuery("SELECT \"REF_DATE\", GEO, 23 as value\r\n" + "FROM nhipcopy\r\n" + "GROUP BY GEO;");
 
 			for (int i = 0; i < 40; i++) {
 				countriesNames.add(result2.get(i).getGeos());

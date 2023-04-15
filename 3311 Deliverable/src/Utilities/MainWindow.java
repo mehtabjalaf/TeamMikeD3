@@ -77,48 +77,7 @@ public class MainWindow extends JFrame implements Window{
 	 * @param monthName
 	 * @return A string containing the numeric value of the month
 	 */
-	public static String getMonthNumber(String monthName) {  //has to be public bc nhip Comparison uses it
-		if(monthName.equals("Jan")) {
-			return "01";
-		}
-		if(monthName.equals("Feb")) {
-			return "02";
-		}
-		if(monthName.equals("Mar")) {
-			return "03";
-		}
-		if(monthName.equals("Apr")) {
-			return "04";
-		}
-		if(monthName.equals("May")) {
-			return "05";
-		}
-		if(monthName.equals("Jun")) {
-			return "06";
-		}
-
-		if(monthName.equals("Jul")) {
-			return "07";
-		}
-		if(monthName.equals("Aug")) {
-			return "08";
-		}
-		if(monthName.equals("Sep")) {
-			return "09";
-		}
-		if(monthName.equals("Oct")) {
-			return "10";
-		}
-		if(monthName.equals("Nov")) {
-			return "11";
-		}
-		if(monthName.equals("Dec")) {
-			return "12";
-		}
-
-
-		return "";
-	}
+	
 	//TODO ADD W/ DB 
 
 	
@@ -142,8 +101,9 @@ public class MainWindow extends JFrame implements Window{
 
 		
 		//Date drop downs : 
-		String[] months = new String[] {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
-		String[] years = new String[] {"1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989", "1990", "1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020", "2021"};
+		DatasetYearsMonths d = new DatasetYearsMonths();
+		String[] months = d.returnMonths();
+		String[] years = d.returnYears();
 		JComboBox<String> startMonth = new JComboBox<String>(months);
 		JComboBox<String> startYear = new JComboBox<String>(years);
 		JComboBox<String> endMonth = new JComboBox<String>(months);
@@ -158,7 +118,7 @@ public class MainWindow extends JFrame implements Window{
 
 		//get all the countries from db
 		ArrayList<DataBaseResults> countriesResult = dao.sendQuery("SELECT \"REF_DATE\", GEO, 23 as value "
-				+ "FROM nhip " + "GROUP BY GEO;");
+				+ "FROM nhipcopy " + "GROUP BY GEO;");
 
 		for (int i = 0; i< countriesResult.size(); i++) {
 			countriesNames.add(countriesResult.get(i).getGeos());
@@ -221,25 +181,31 @@ public class MainWindow extends JFrame implements Window{
 				String selectedCountry = (String) countriesList.getSelectedItem(); 
 				String selectedCountry2 = (String) countriesList2.getSelectedItem();
 				//convert month to a numeric value
-				String startNum = getMonthNumber ((String)startMonth.getSelectedItem());
-				String endNum = getMonthNumber ((String)endMonth.getSelectedItem());
+				
+				SelectedMonth s1 = new SelectedMonth();
+				String startNum = s1.getMonthNumber((String)startMonth.getSelectedItem());
+				String endNum = s1.getMonthNumber((String)endMonth.getSelectedItem());
 
 				String sendStart = (String) startYear.getSelectedItem() + "-" +startNum + "-"+"01";
 				String sendEnd = (String) endYear.getSelectedItem() + "-" +endNum + "-"+"01";
 				
+				TimeSeriesStartEnd t = new TimeSeriesStartEnd(selectedCountry, selectedCountry2, sendStart, sendEnd);
 				//ALL OF THIS ^^^ IS FOR QUERY
 
 				String sendvis1 = (String)vis1drop.getSelectedItem();
 				String sendvis2= (String)vis2drop.getSelectedItem();
 				
 				//get tabular views for both countries
-				TabularView tableDataForCountry1 = setTabularViews(selectedCountry, sendStart, sendEnd);
+				TimeSeriesStartEnd t2 = new TimeSeriesStartEnd (selectedCountry, sendStart, sendEnd);
+				TabularView tableDataForCountry1 = setTabularViews(t2);
 				table1Panel.removeAll();; 
 				table1Panel.add(tableDataForCountry1.getTable());
 				table1Panel.validate();
 				table1Panel.repaint();
 				
-				TabularView tableDataForCountry2 = setTabularViews(selectedCountry2, sendStart, sendEnd);
+				
+				t2.updateCountry(selectedCountry2);
+				TabularView tableDataForCountry2 = setTabularViews(t2);
 				table2Panel.removeAll();; 
 				table2Panel.add(tableDataForCountry2.getTable());
 				table2Panel.validate();
@@ -248,7 +214,7 @@ public class MainWindow extends JFrame implements Window{
 				
 				// Update the dataset with the selected country
 				try {
-					updateDataset(selectedCountry, selectedCountry2, sendStart, sendEnd);
+					updateDataset(t);
 					
 				} catch (Exception ex) {
 					ex.printStackTrace();
@@ -382,13 +348,13 @@ public class MainWindow extends JFrame implements Window{
 	 * @param sendEnd - Selected end date 
 	 * @return The panel containing the tabular visualization
 	 */
-	public TabularView setTabularViews(String geo, String sendStart, String sendEnd) {
-		String script = "SELECT * FROM nhip "
+	public TabularView setTabularViews(TimeSeriesStartEnd t) {
+		String script = "SELECT * FROM nhipcopy "
 				+ "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
-				+ "BETWEEN DATE('" +sendStart + "') AND DATE('" + sendEnd + "') "
-				+ "AND GEO = '"+ geo +"';";
+				+ "BETWEEN DATE('" +t.sendStart + "') AND DATE('" + t.sendEnd + "') "
+				+ "AND GEO = '"+ t.selectedCountry +"';";
 		
-		TabularView tableDataForCountry = new TabularView(script, geo); 
+		TabularView tableDataForCountry = new TabularView(script, t.selectedCountry); 
 		
 		return tableDataForCountry;
 	}
@@ -401,18 +367,18 @@ public class MainWindow extends JFrame implements Window{
 	 * @param sendEnd - Selected end date
 	 * @throws Exception - In case database cannot be accessed
 	 */
-	public void updateDataset(String geo, String geo2, String sendStart, String sendEnd) throws Exception {
+	public void updateDataset(TimeSeriesStartEnd t) throws Exception {
 		dataset.clear();
 
-		String query = "SELECT * FROM nhip "
+		String query = "SELECT * FROM nhipcopy "
 				+ "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
 				+ "BETWEEN ? AND ?;";
 
-		ArrayList<DataBaseResults> result3 = dao.sendQuery(query, sendStart, sendEnd);
+		ArrayList<DataBaseResults> result3 = dao.sendQuery(query, t.sendStart, t.sendEnd);
 
 		for (int i = 0; i < result3.size(); i++) {
 			DataBaseResults row = result3.get(i);
-			if (row.getGeos().equals(geo) || row.getGeos().equals(geo2)) {
+			if (row.getGeos().equals(t.selectedCountry) || row.getGeos().equals(t.selectedCountry2)) {
 				double value = row.getValues();
 				String date = row.getRefDates();
 				String geoName = row.getGeos();

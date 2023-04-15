@@ -42,16 +42,14 @@ public class NHIPComparison extends JFrame implements Window {
 		MySQLAccess dao = new MySQLAccess();
 		dao.connectToDataBase();
 		Vector<String> countriesNames = new Vector<String>();
+		
+		DatasetYearsMonths d = new DatasetYearsMonths();
 
-		String[] months = new String[] { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov",
-				"Dec" };
-		String[] years = new String[] { "1981", "1982", "1983", "1984", "1985", "1986", "1987", "1988", "1989", "1990",
-				"1991", "1992", "1993", "1994", "1995", "1996", "1997", "1998", "1999", "2000", "2001", "2002", "2003",
-				"2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", "2012", "2013", "2014", "2015", "2016",
-				"2017", "2018", "2019", "2020", "2021" };
+		String[] months = d.returnMonths();
+		String[] years = d.returnYears();
 
 		ArrayList<DataBaseResults> result2 = dao
-				.sendQuery("SELECT \"REF_DATE\", GEO, 23 as value\r\n" + "FROM nhip\r\n" + "GROUP BY GEO;");
+				.sendQuery("SELECT \"REF_DATE\", GEO, 23 as value\r\n" + "FROM nhipcopy\r\n" + "GROUP BY GEO;");
 
 		for (int i = 0; i < 40; i++) {
 			countriesNames.add(result2.get(i).getGeos());
@@ -76,19 +74,24 @@ public class NHIPComparison extends JFrame implements Window {
 				String testType = (String) comparisonType.getSelectedItem();
 
 				try {
-					String startNum = MainWindow.getMonthNumber((String) startMonth.getSelectedItem());
-					String endNum = MainWindow.getMonthNumber((String) endMonth.getSelectedItem());
+					SelectedMonth s1 = new SelectedMonth();
+					String startNum = s1.getMonthNumber((String) startMonth.getSelectedItem());
+					String endNum = s1.getMonthNumber((String) endMonth.getSelectedItem());
 					String sendStart = (String) startYear.getSelectedItem() + "-" + startNum + "-" + "01";
 					String sendEnd = (String) endYear.getSelectedItem() + "-" + endNum + "-" + "01";
-					ArrayList<DataBaseResults> set1 = updateDataset(l1, sendStart, sendEnd);
-					ArrayList<DataBaseResults> set2 = updateDataset(l2, sendStart, sendEnd);
+					TimeSeriesStartEnd t = new TimeSeriesStartEnd(l1, sendStart, sendEnd);
+					ArrayList<DataBaseResults> set1 = updateDataset(t);
+					t.updateCountry(l2);
+					ArrayList<DataBaseResults> set2 = updateDataset(t);
 					if (testType.equals("T-Test")) {
-						String p = calculateTtest(set1, set2);
+						StatisticalCalculations s = new StatisticalCalculations();
+						String p = s.calculateTtest(set1, set2);
 						testShow.setText(p);
 					}
 
 					if (testType.equals("Mann-Whitney U-test")) {
-						String manuTest = calculateMannWhitneyU(set1, set2);
+						StatisticalCalculations s = new StatisticalCalculations();
+						String manuTest = s.calculateMannWhitneyU(set1, set2);
 						testShow.setText(manuTest);
 					}
 				} catch (Exception e1) {
@@ -128,18 +131,18 @@ public class NHIPComparison extends JFrame implements Window {
 
 	// TODO MODIFIED VERSION OF THIS FUNC CAN BE MADE TO ADD WHERE GEO = STATEMENT
 	// AND WE GET RID OF FORLOOP
-	public ArrayList<DataBaseResults> updateDataset(String geo, String sendStart, String sendEnd) throws Exception {
+	public ArrayList<DataBaseResults> updateDataset(TimeSeriesStartEnd t) throws Exception {
 		MySQLAccess dao = new MySQLAccess();
 		dao.connectToDataBase();
-		String query = "SELECT * FROM nhip " + "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
+		String query = "SELECT * FROM nhipcopy " + "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
 				+ "BETWEEN ? AND ?;";
 
-		ArrayList<DataBaseResults> result3 = dao.sendQuery(query, sendStart, sendEnd);
+		ArrayList<DataBaseResults> result3 = dao.sendQuery(query, t.sendStart, t.sendEnd);
 		ArrayList<DataBaseResults> result4 = new ArrayList<DataBaseResults>();
 
 		for (int i = 0; i < result3.size(); i++) {
 			DataBaseResults row = result3.get(i);
-			if (row.getGeos().equals(geo)) {
+			if (row.getGeos().equals(t.selectedCountry)) {
 				result4.add(result3.get(i)); // query to get nhpi values from date range and put in array list then
 												// passed to calcttest
 			}
@@ -154,65 +157,7 @@ public class NHIPComparison extends JFrame implements Window {
 	 * @param set2 - Second set of data
 	 * @return String containing the results from the test
 	 */
-	public String calculateTtest(ArrayList<DataBaseResults> set1, ArrayList<DataBaseResults> set2) {
-
-		TTest ttest = new TTest();
-		ArrayList<Double> vals1 = new ArrayList<Double>();
-		ArrayList<Double> vals2 = new ArrayList<Double>();
-
-		for (int i = 0; i < set1.size(); i++) {
-			vals1.add(set1.get(i).getValues());
-		}
-
-		for (int i = 0; i < set2.size(); i++) {
-			vals2.add(set2.get(i).getValues());
-		}
-
-		double[] array1 = new double[vals1.size()];
-		double[] array2 = new double[vals2.size()];
-
-		for (int i = 0; i < set1.size(); i++) {
-			array1[i] = vals1.get(i);
-		}
-		for (int i = 0; i < set2.size(); i++) {
-			array2[i] = vals2.get(i); // TODO REFACTOOOOR
-
-		}
-
-		double p = ttest.tTest(array1, array2);
-		String ret = "";
-
-		if (p < 0.05) {
-			ret = "We reject the null hypothesis,  p = " + p;
-		} else {
-			ret = "We cannot reject the null hypothesis,   p = " + p;
-		}
-
-		return ret;
-	}
-
-	/**
-	 * Calculates MannWhitneyU score given 2 sets of data.
-	 * @param set1 - First set of data
-	 * @param set2 - Second set of data
-	 * @return String containing the results from the test
-	 */
-	private String calculateMannWhitneyU(ArrayList<DataBaseResults> set1, ArrayList<DataBaseResults> set2) {
-		double[] values1 = new double[set1.size()];
-		for (int i = 0; i < set1.size(); i++) {
-			values1[i] = set1.get(i).getValues();
-		}
-
-		double[] values2 = new double[set2.size()];
-		for (int i = 0; i < set2.size(); i++) {
-			values2[i] = set2.get(i).getValues();
-		}
-
-		MannWhitneyUTest test = new MannWhitneyUTest();
-		double pValue = test.mannWhitneyUTest(values1, values2);
-
-		return "Mann-Whitney U Test p-value: " + pValue;
-	}
+	
 
 	public static void main(String[] args) throws Exception {
 		JFrame frame = new NHIPComparison();

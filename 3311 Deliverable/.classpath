@@ -6,15 +6,15 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/commons-math3-3.6.1.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/jcommon-1.0.23.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/jfreechart-1.0.19.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/jfreechart-1.0.19-demo.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/jfreechart-1.0.19-experimental.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/jfreesvg-2.0.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/mysql-connector-j-8.0.32.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/orsoncharts-1.4-eval-nofx.jar"/>
-	<classpathentry kind="lib" path="C:/Users/fio/Downloads/sunnysfuckingjars/orsonpdf-1.6-eval.jar"/>
-	<classpathentry kind="lib" path="C:/Program Files/Weka-3-8-6/weka.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/commons-math3-3.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/jfreechart-1.0.19.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/jfreechart-1.0.19-demo.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/jfreechart-1.0.19-experimental.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/jfreesvg-2.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/mysql-connector-j-8.0.32.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/orsoncharts-1.4-eval-nofx.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/jars/orsonpdf-1.6-eval.jar"/>
+	<classpathentry kind="lib" path="C:/Users/gps_s/Desktop/Weka-3-8-6/weka.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

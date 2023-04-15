@@ -31,7 +31,7 @@ public class MySQLAccess implements DataBaseConnection{
 			// This will load the MySQL driver, each DB has its own driver
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			// Setup the connection with the DB
-			connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/deliverable3311", "root", "nessa"); 
+			connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/3311deliverable", "root", "Sunpreet02"); 
 
 			//statement = connect.createStatement();
 
@@ -53,7 +53,7 @@ public class MySQLAccess implements DataBaseConnection{
 			// This will load the MySQL driver, each DB has its own driver
 			Class.forName("com.mysql.cj.jdbc.Driver");
 			// Setup the connection with the DB
-			connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/deliverable3311", "root", "nessa"); // TODO
+			connect = DriverManager.getConnection("jdbc:mysql://localhost:3306/3311deliverable", "root", "Sunpreet02"); // TODO
 
 			// Statements allow to issue SQL queries to the database
 			statement = connect.createStatement();
@@ -63,7 +63,7 @@ public class MySQLAccess implements DataBaseConnection{
 			
 			
 			// Result set get the result of the SQL query
-			resultSet = statement.executeQuery("select * from nhip"); // changed
+			resultSet = statement.executeQuery("select * from nhipcopy"); // changed
 
 			ArrayList<DataBaseResults> result = writeResultSet(resultSet);
 

@@ -17,6 +17,8 @@ public class DataBaseResults {
 	 * Constructor that initializes each attribute to empty values.
 	 * Used for testing. 
 	 */
+	
+	
 	public DataBaseResults() {
 		refDates = ""; 
 		geos = "";

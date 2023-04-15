@@ -242,7 +242,7 @@ public class TabularView extends JFrame implements Window{
 		double maxValue = Collections.max(listOfValues);
 
 		double standardDev = getDBResults(
-				"select 'REF_DATE','GEO',stddev(value) as value from  nhip where geo = 'Calgary, Alberta'").get(0)
+				"select 'REF_DATE','GEO',stddev(value) as value from  nhipcopy where geo = 'Calgary, Alberta'").get(0)
 						.getValues();
 
 		// ADDING VALUES TO TABLE
@@ -349,7 +349,7 @@ public class TabularView extends JFrame implements Window{
 	}
 
 	public static void main(String[] args) {
-		String script = "SELECT * FROM nhip " + "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
+		String script = "SELECT * FROM nhipcopy " + "WHERE STR_TO_DATE(CONCAT('01-', REF_DATE), '%d-%b-%y') "
 				+ "BETWEEN DATE('1998-01-01') AND DATE('1999-01-01') " + "AND GEO = 'Ontario'";
 		JFrame frame = new TabularView(script, "Ontario");
 
